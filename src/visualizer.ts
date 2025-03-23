@@ -168,28 +168,106 @@ class RobotVisualizer {
         const base = new THREE.Mesh(baseGeometry, baseMaterial);
         this.robotModel.add(base);
 
-        // Add links
-        let currentPosition = [0, 0, 0];
-        let currentRotation = new THREE.Matrix4();
+        // Calculate cumulative transformations for each joint
+        const transforms: math.Matrix[] = [];
+        for (let i = 0; i < this.robot.config.dhParameters.length; i++) {
+            // Calculate transform for this joint
+            const transform = this.robot!.calculateDHTransform(this.robot.config.dhParameters[i], this.jointAngles[i]);
+            // Multiply with previous transforms to get cumulative transform
+            if (i === 0) {
+                transforms.push(transform);
+            } else {
+                transforms.push(math.multiply(transforms[i - 1], transform));
+            }
+        }
+
+        // Draw cylinders between consecutive points
+        let previousPoint = new THREE.Vector3(0, 0, 0);
         
-        this.robot.config.dhParameters.forEach((params: DHParameters, index: number) => {
-            const linkGeometry = new THREE.CylinderGeometry(0.02, 0.02, params.a, 32);
-            const linkMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-            const link = new THREE.Mesh(linkGeometry, linkMaterial);
-            
-            // Position and rotate link
-            link.position.set(currentPosition[0], currentPosition[1], currentPosition[2]);
-            link.rotation.x = params.alpha;
-            link.rotation.z = this.jointAngles[index];
-            
-            this.robotModel?.add(link);
-            
-            // Update position and rotation for next link
-            if (!this.robot) return;
-            const transform = this.robot.calculateDHTransform(params, this.jointAngles[index]);
+        // Add a point at the origin for debugging
+        const originGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+        const originMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+        const originPoint = new THREE.Mesh(originGeometry, originMaterial);
+        this.robotModel.add(originPoint);
+        
+        transforms.forEach((transform, index) => {
+            // Get the position from the transform matrix
             const transformArray = transform.toArray() as number[][];
-            currentPosition = [transformArray[0][3], transformArray[1][3], transformArray[2][3]];
-            currentRotation = new THREE.Matrix4().fromArray(transformArray.flat());
+            const currentPoint = new THREE.Vector3(
+                transformArray[0][3],
+                transformArray[1][3],
+                transformArray[2][3]
+            );
+
+            // Add a point at each joint for debugging
+            const jointGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+            const jointMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+            const jointPoint = new THREE.Mesh(jointGeometry, jointMaterial);
+            jointPoint.position.copy(currentPoint);
+            this.robotModel!.add(jointPoint);
+
+            // Create cylinder between previous and current point
+            const direction = currentPoint.clone().sub(previousPoint);
+            const length = direction.length();
+            direction.normalize();
+
+            const cylinderGeometry = new THREE.CylinderGeometry(0.02, 0.02, length, 32);
+            const cylinderMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+            const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+
+            // Position cylinder at midpoint
+            cylinder.position.copy(previousPoint.clone().add(currentPoint).multiplyScalar(0.5));
+
+            // Calculate rotation to align cylinder with direction
+            // Create a quaternion that rotates from the cylinder's default orientation (along Y)
+            // to the desired direction
+            const quaternion = new THREE.Quaternion();
+            quaternion.setFromUnitVectors(
+                new THREE.Vector3(0, 1, 0), // Default cylinder orientation (along Y)
+                direction
+            );
+            cylinder.setRotationFromQuaternion(quaternion);
+
+            this.robotModel!.add(cylinder);
+            previousPoint.copy(currentPoint);
+
+            // If this is the last point, add a tripod to show orientation
+            if (index === transforms.length - 1) {
+                const tripod = new THREE.Group();
+                
+                // Create three axes (red for X, green for Y, blue for Z)
+                const axisLength = 0.1;
+                const axisRadius = 0.005;
+                
+                const xAxis = new THREE.Mesh(
+                    new THREE.CylinderGeometry(axisRadius, axisRadius, axisLength, 32),
+                    new THREE.MeshPhongMaterial({ color: 0xff0000 })
+                );
+                xAxis.rotation.z = -Math.PI / 2;
+                xAxis.position.x = axisLength / 2;
+                
+                const yAxis = new THREE.Mesh(
+                    new THREE.CylinderGeometry(axisRadius, axisRadius, axisLength, 32),
+                    new THREE.MeshPhongMaterial({ color: 0x00ff00 })
+                );
+                yAxis.position.y = axisLength / 2;
+                
+                const zAxis = new THREE.Mesh(
+                    new THREE.CylinderGeometry(axisRadius, axisRadius, axisLength, 32),
+                    new THREE.MeshPhongMaterial({ color: 0x0000ff })
+                );
+                zAxis.rotation.x = Math.PI / 2;
+                zAxis.position.z = axisLength / 2;
+                
+                tripod.add(xAxis, yAxis, zAxis);
+                tripod.position.copy(currentPoint);
+                
+                // Apply the final orientation to the tripod
+                const finalRotation = new THREE.Matrix4().fromArray(transformArray.flat());
+                tripod.setRotationFromMatrix(finalRotation);
+                
+                this.robotModel!.add(tripod);
+            }
         });
 
         if (this.robotModel) {
