@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Kinematics Visualizer</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.js"></script>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div id="controls">
+        <div class="control-group">
+            <h3>Robot Configuration</h3>
+            <select id="robot-select">
+                <option value="staubli_rx90b">Stäubli RX90B</option>
+                <option value="kuka_kr6">KUKA KR6</option>
+                <option value="abb_irb120">ABB IRB120</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <h3>Joint Controls</h3>
+            <div id="joint-controls"></div>
+        </div>
+        <div class="control-group">
+            <h3>Results</h3>
+            <div class="result">
+                <p>Position: <span id="position">[0, 0, 0]</span></p>
+                <p>Orientation: <span id="orientation">[0, 0, 0]</span></p>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="./visualizer.ts"></script>
+</body>
+</html> 

@@ -1,0 +1,21 @@
+{
+    "dhParameters": [
+        { "theta": 0, "d": 0.325, "a": 0.225, "alpha": -1.5708 },
+        { "theta": 0, "d": 0, "a": 0.735, "alpha": 0 },
+        { "theta": 0, "d": 0, "a": 0.175, "alpha": 0 },
+        { "theta": 0, "d": 0.735, "a": 0, "alpha": -1.5708 },
+        { "theta": 0, "d": 0, "a": 0, "alpha": 1.5708 },
+        { "theta": 0, "d": 0.1, "a": 0, "alpha": 0 }
+    ],
+    "jointLimits": [
+        { "min": -3.14159, "max": 3.14159 },
+        { "min": -3.14159, "max": 3.14159 },
+        { "min": -3.14159, "max": 3.14159 },
+        { "min": -3.14159, "max": 3.14159 },
+        { "min": -3.14159, "max": 3.14159 },
+        { "min": -3.14159, "max": 3.14159 }
+    ],
+    "jointTypes": ["revolute", "revolute", "revolute", "revolute", "revolute", "revolute"],
+    "baseOffset": [0, 0, 0],
+    "toolOffset": [0, 0, 0]
+} 

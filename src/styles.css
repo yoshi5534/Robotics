@@ -1,0 +1,55 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+}
+
+#canvas-container {
+    flex: 1;
+    background: #f0f0f0;
+}
+
+#controls {
+    width: 300px;
+    padding: 20px;
+    background: white;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    overflow-y: auto;
+}
+
+.control-group {
+    margin-bottom: 20px;
+}
+
+select, input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.joint-control {
+    margin: 10px 0;
+}
+
+.joint-control label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.joint-control input[type="range"] {
+    width: 100%;
+}
+
+.joint-control input[type="number"] {
+    width: 80px;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 10px;
+    background: #f8f8f8;
+    border-radius: 4px;
+} 
